@@ -295,6 +295,7 @@ export default function BorrowshipPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
