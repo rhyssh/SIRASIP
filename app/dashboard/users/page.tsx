@@ -227,7 +227,7 @@ export default function UsersPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="role">Role</Label>
-                <Select onValueChange={(value) => setNewForm({ ...newForm, role: value })}>
+                <Select defaultValue="staff" onValueChange={(value) => setNewForm({ ...newForm, role: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih role pengguna" />
                   </SelectTrigger>
@@ -348,12 +348,12 @@ export default function UsersPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-role">Role</Label>
-              <Select value={editForm.role} onValueChange={(value) => setEditForm({ ...editForm, role: value })}>
+              <Select value={editForm.role} defaultValue={editForm.role} onValueChange={(value) => setEditForm({ ...editForm, role: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih role pengguna" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">Pengguna</SelectItem>
+                  <SelectItem value="staff">Staff</SelectItem>
                   <SelectItem value="admin">Administrator</SelectItem>
                 </SelectContent>
               </Select>
