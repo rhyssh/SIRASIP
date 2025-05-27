@@ -23,7 +23,6 @@ export default function LoginPage() {
     setErrorMsg("");
 
     try {
-      console.log(email, password);
       await signIn(email, password);
       router.push("/dashboard");
     } catch (error: unknown) {

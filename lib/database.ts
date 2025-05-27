@@ -143,13 +143,13 @@ export async function getRecentActivities(): Promise<Activity[]> {
 // Ambil daftar dokumen yang lewat tanggal kembali
 export async function getOverdueBorrows(): Promise<Activity[]> {
   const supabase = getSupabaseClient();
+
   const { data, error } = await supabase
-    .from("borrowship")
+    .from("overdue_borrowship") // nama view
     .select("*")
-    .gt("tanggal_dikembalikan", "tanggal_kembali")
-    .eq("status", "aktif")
     .returns<Activity[]>();
 
   if (error) throw error;
   return data ?? [];
 }
+

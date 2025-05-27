@@ -7,55 +7,55 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FileText, Users, Clock, CheckCircle } from "lucide-react";
 
 interface User {
-  id: string
-  user_id?: string
-  name: string
-  peminjam: string
-  jumlah_berkas: number
-  nomor_berkas: string
-  nama_berkas: string
-  tanggal_peminjam: string
-  tanggal_kembali: string
-  tanggal_dikembalikan?: string
-  petugas?: string
-  keterangan?: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  user_id?: string;
+  name: string;
+  peminjam: string;
+  jumlah_berkas: number;
+  nomor_berkas: string;
+  nama_berkas: string;
+  tanggal_peminjam: string;
+  tanggal_kembali: string;
+  tanggal_dikembalikan?: string;
+  petugas?: string;
+  keterangan?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Activity {
-  id: string
-  user_id?: string
-  peminjam: string
-  jumlah_berkas: number
-  nomor_berkas: string
-  nama_berkas: string
-  tanggal_peminjam: string
-  tanggal_kembali: string
-  tanggal_dikembalikan?: string
-  petugas?: string
-  keterangan?: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  user_id?: string;
+  peminjam: string;
+  jumlah_berkas: number;
+  nomor_berkas: string;
+  nama_berkas: string;
+  tanggal_peminjam: string;
+  tanggal_kembali: string;
+  tanggal_dikembalikan?: string;
+  petugas?: string;
+  keterangan?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Overdue {
-id: string
-  user_id?: string
-  peminjam: string
-  jumlah_berkas: number
-  nomor_berkas: string
-  nama_berkas: string
-  tanggal_peminjam: string
-  tanggal_kembali: string
-  tanggal_dikembalikan?: string
-  petugas?: string
-  keterangan?: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  user_id?: string;
+  peminjam: string;
+  jumlah_berkas: number;
+  nomor_berkas: string;
+  nama_berkas: string;
+  tanggal_peminjam: string;
+  tanggal_kembali: string;
+  tanggal_dikembalikan?: string;
+  petugas?: string;
+  keterangan?: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function DashboardPage() {
@@ -85,12 +85,12 @@ export default function DashboardPage() {
 
     const fetchMoreData = async () => {
       const [activities, overdues] = await Promise.all([getRecentActivities(), getOverdueBorrows()]);
-      setRecentActivities(activities );
+      setRecentActivities(activities);
       setOverdueDocs(overdues);
     };
 
     fetchMoreData();
-  },[]);
+  }, []);
 
   const status = (status: string) => {
     switch (status) {
@@ -198,15 +198,20 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {overdueDocs.map((doc, index) => {
-                // const overdueDays = Math.floor((new Date().getTime() - new Date(doc.tanggal_dikembalikan).getTime()) / (1000 * 60 * 60 * 24));
+                const tanggalKembali = new Date(doc.tanggal_kembali);
+                const tanggalDikembalikan = doc.tanggal_dikembalikan ? new Date(doc.tanggal_dikembalikan) : null;
+
+                const hariIni = new Date();
+                const selisihMs = (tanggalDikembalikan ?? hariIni).getTime() - tanggalKembali.getTime();
+                const overdueDays = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
 
                 return (
                   <div key={index} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                     <div>
-                      {/* <p className="text-sm font-medium text-slate-900">{doc.nomor_berkas}</p>
-                      <p className="text-xs text-slate-500">Peminjam: {doc.peminjam}</p> */}
+                      <p className="text-sm font-medium text-slate-900">{doc.nomor_berkas}</p>
+                      <p className="text-xs text-slate-500">Peminjam: {doc.peminjam}</p>
                     </div>
-                    {/* <span className="text-xs text-red-600 font-medium">Terlambat {overdueDays} hari</span> */}
+                    <span className="text-xs text-red-600 font-medium">Terlambat {overdueDays} hari</span>
                   </div>
                 );
               })}

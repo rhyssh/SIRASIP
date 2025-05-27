@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Calendar, User } from "lucide-react";
 import { getBorrowRecords, updateBorrowRecord, deleteBorrowRecord, createBorrowRecord } from "@/lib/database";
 import { getCurrentUser } from "@/lib/auth";
+import { toast } from "sonner";
 interface BorrowRecord {
   id: string;
   jumlah_berkas: number;
@@ -31,6 +34,12 @@ interface User {
   // tambahkan properti lain kalau ada
 }
 
+function cleanObject<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v !== "" && v !== undefined)
+  ) as Partial<T>;
+}
+
 export default function BorrowshipPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,6 +48,7 @@ export default function BorrowshipPage() {
   const [borrowRecords, setBorrowRecords] = useState<BorrowRecord[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 2;
   const [editForm, setEditForm] = useState({
     peminjam: "",
@@ -60,7 +70,6 @@ export default function BorrowshipPage() {
     jumlah_berkas: 1,
     tanggal_peminjam: "",
     tanggal_kembali: "",
-    tanggal_dikembalikan: "",
     keterangan: "",
     petugas: "",
     status: "",
@@ -95,22 +104,28 @@ export default function BorrowshipPage() {
 
   const handleSaveEdit = async () => {
     if (!editingRecord) return;
+    setIsLoading(true);
+    const cleanedForm = cleanObject(editForm);
     try {
-      const updated = await updateBorrowRecord(editingRecord.id, editForm);
+      const updated = await updateBorrowRecord(editingRecord.id, cleanedForm);
       setBorrowRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r) as BorrowRecord));
+      toast.success("Data berhasil diperbarui");
       setEditDialogOpen(false);
       setEditingRecord(null);
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error("Gagal update data", error);
+      toast.error("Gagal update data");
     }
   };
 
   const handleSaveNew = async () => {
+    setIsLoading(true);
     try {
       if (!newForm.tanggal_peminjam) {
         newForm.tanggal_peminjam = new Date().toISOString().split("T")[0];
       }
-      console.log(newForm);
       const recordToInsert = {
         ...newForm,
         tanggal_peminjam: newForm.tanggal_peminjam,
@@ -120,7 +135,6 @@ export default function BorrowshipPage() {
 
       const created = await createBorrowRecord(recordToInsert as Omit<BorrowRecord, "id" | "created_at" | "updated_at">);
       setBorrowRecords((prev) => [created, ...prev] as BorrowRecord[]);
-      setIsDialogOpen(false);
       setNewForm({
         peminjam: "",
         nomor_berkas: "",
@@ -128,12 +142,15 @@ export default function BorrowshipPage() {
         jumlah_berkas: 1,
         tanggal_peminjam: new Date().toISOString().split("T")[0],
         tanggal_kembali: "",
-        tanggal_dikembalikan: "",
         keterangan: "",
         petugas: "",
         status: "aktif",
       });
+      toast.success("Berhasil simpan data");
+      setIsLoading(false);
+      setIsDialogOpen(false);
     } catch (error) {
+      toast.error("Gagal simpan data");
       console.error("Gagal tambah data", error);
     }
   };
@@ -228,7 +245,7 @@ export default function BorrowshipPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="jumlah_berkas">Jumlah Berkas</Label>
-                <Input id="jumlah_berkas" type="number" placeholder="Masukkan jumlah berkas" onChange={(e) => setNewForm({ ...newForm, jumlah_berkas: parseInt(e.target.value) })} />
+                <Input id="jumlah_berkas" type="number" min={1} placeholder="Masukkan jumlah berkas" onChange={(e) => setNewForm({ ...newForm, jumlah_berkas: parseInt(e.target.value) })} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="tanggal_peminjam">Tanggal peminjam</Label>
@@ -244,32 +261,36 @@ export default function BorrowshipPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
-                <select id="status" name="status" onChange={(e) => setNewForm({ ...newForm, status: e.target.value })}>
-                  <option value="" disabled>
-                    Pilih status
-                  </option>
-                  <option value="aktif">Aktif</option>
-                  <option value="dikembalikan">Dikembalikan</option>
-                  <option value="terlambat">Terlambat</option>
-                </select>
+                <Select defaultValue="aktif" onValueChange={(e) => setNewForm({ ...newForm, status: e })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih status pengguna" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aktif">Aktif</SelectItem>
+                    <SelectItem value="dikembalikan">Dikembalikan</SelectItem>
+                    <SelectItem value="terlambat">Terlambat</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="keterangan">Keterangan</Label>
-                <select name="keterangan" id=" keterangan" onChange={(e) => setNewForm({ ...newForm, keterangan: e.target.value })}>
-                  <option value="" disabled>
-                    Pilih keterangan
-                  </option>
-                  <option value="internal">Internal</option>
-                  <option value="eksternal">Eksternal</option>
-                </select>
+                <Select  onValueChange={(e) => setNewForm({ ...newForm, keterangan: e })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih keterangan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="internal">Internal</SelectItem>
+                    <SelectItem value="eksternal">Eksternal</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Batal
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => handleSaveNew()}>
-                Simpan
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => handleSaveNew()} disabled={isLoading}>
+                {isLoading ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -295,7 +316,7 @@ export default function BorrowshipPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-jumlah_berkas">Jumlah Berkas</Label>
-                <Input id="edit-jumlah_berkas" type="number" value={editForm.jumlah_berkas} onChange={(e) => setEditForm({ ...editForm, jumlah_berkas: Number.parseInt(e.target.value) || 1 })} placeholder="Masukkan jumlah berkas" />
+                <Input id="edit-jumlah_berkas" type="number" min={1} value={editForm.jumlah_berkas} onChange={(e) => setEditForm({ ...editForm, jumlah_berkas: Number.parseInt(e.target.value) || 1 })} placeholder="Masukkan jumlah berkas" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-tanggal_kembali">Tanggal Kembali</Label>
@@ -311,31 +332,36 @@ export default function BorrowshipPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-status">Status</Label>
-                <select
-                  id="edit-status"
-                  value={editForm.status}
-                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as "aktif" | "dikembalikan" | "terlambat" })}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <option value="aktif">Aktif</option>
-                  <option value="dikembalikan">Dikembalikan</option>
-                  <option value="terlambat">Terlambat</option>
-                </select>
+                <Select value={editForm.status} onValueChange={(e) => setEditForm({ ...editForm, status: e as "aktif" | "dikembalikan" | "terlambat" })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih status pengguna" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aktif">Aktif</SelectItem>
+                    <SelectItem value="dikembalikan">Dikembalikan</SelectItem>
+                    <SelectItem value="terlambat">Terlambat</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="edit-keterangan">Keterangan</Label>
-                <select name="edit-keterangan" id="edit-keterangan" value={editForm.keterangan} onChange={(e) => setEditForm({ ...editForm, keterangan: e.target.value })}>
-                  <option value="internal">Internal</option>
-                  <option value="eksternal">Eksternal</option>
-                </select>
+                <Select value={editForm.keterangan} onValueChange={(e) => setEditForm({ ...editForm, keterangan: e })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih keterangan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="internal">Internal</SelectItem>
+                    <SelectItem value="eksternal">Eksternal</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
                 Batal
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveEdit}>
-                Simpan Perubahan
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveEdit} disabled={isLoading}>
+                {isLoading ? "Loading...": "Simpan Perubahan"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -420,7 +446,6 @@ export default function BorrowshipPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-slate-500" />
                         <span className="text-sm">{record.tanggal_dikembalikan ? formatDate(record.tanggal_dikembalikan) : "-"}</span>
-
                       </div>
                     </TableCell>
                     <TableCell>
