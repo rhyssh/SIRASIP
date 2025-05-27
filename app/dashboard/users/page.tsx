@@ -40,6 +40,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserInterface[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [editingUser, setEditingUser] = useState<UserInterface | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -108,6 +109,7 @@ export default function UsersPage() {
   };
 
   const handleEditUser = (user: UserInterface) => {
+
     setEditingUser(user);
     setEditForm({
       name: user.name,
@@ -119,6 +121,7 @@ export default function UsersPage() {
   };
 
   const handleSaveEdit = async () => {
+    setIsLoading(true);
     try {
       const { updateUser } = await import("@/lib/database");
       if (editingUser) {
@@ -128,6 +131,7 @@ export default function UsersPage() {
         const data = await getUsers();
         setUsers(data);
       }
+      setIsLoading(false);
       setEditDialogOpen(false);
       setEditingUser(null);
     } catch (error) {
@@ -136,6 +140,7 @@ export default function UsersPage() {
   };
 
   const handleSaveNew = async () => {
+    setIsLoading(true);
     if (!newForm.name || !newForm.email || !newForm.password || !newForm.role || !newForm.status) {
       alert("Mohon lengkapi semua data termasuk role dan status.");
       return;
@@ -143,6 +148,7 @@ export default function UsersPage() {
     try {
       const created = await createUser(newForm);
       setUsers((prev) => [created, ...prev] as UserInterface[]);
+      setIsLoading(false);
       setIsDialogOpen(false);
       setNewForm({
         name: "",
@@ -245,8 +251,8 @@ export default function UsersPage() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Batal
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveNew}>
-                Simpan
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveNew} disabled={!newForm.email || !newForm.name || !newForm.password || !newForm.role || !newForm.status || isLoading}>
+                {isLoading ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -369,8 +375,8 @@ export default function UsersPage() {
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
               Batal
             </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveEdit}>
-              Simpan Perubahan
+            <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveEdit} disabled={isLoading}>
+              {isLoading ? "Loading..." : "Simpan"}
             </Button>
           </DialogFooter>
         </DialogContent>
