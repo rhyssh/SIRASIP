@@ -141,8 +141,10 @@ export default function UsersPage() {
 
   const handleSaveNew = async () => {
     setIsLoading(true);
+    console.log(!newForm.role);
     if (!newForm.name || !newForm.email || !newForm.password || !newForm.role || !newForm.status) {
       alert("Mohon lengkapi semua data termasuk role dan status.");
+      setIsLoading(false);
       return;
     }
     try {
@@ -227,7 +229,7 @@ export default function UsersPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="role">Role</Label>
-                <Select defaultValue="staff" onValueChange={(value) => setNewForm({ ...newForm, role: value })}>
+                <Select onValueChange={(value) => setNewForm({ ...newForm, role: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih role pengguna" />
                   </SelectTrigger>

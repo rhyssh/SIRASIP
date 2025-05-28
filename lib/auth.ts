@@ -16,7 +16,7 @@ interface user{
 }
 export async function signIn(email: string, password: string): Promise<User> {
   const supabase = getSupabaseClient();
-  console.log(email, password);
+  
   const { data: user, error } = await supabase
     .from("users")
     .select("*")
