@@ -295,9 +295,9 @@ export default function BorrowshipPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-screen overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Peminjaman</DialogTitle>
               <DialogDescription>Ubah detail peminjaman dokumen arsip</DialogDescription>
