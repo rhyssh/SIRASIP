@@ -49,7 +49,7 @@ export default function BorrowshipPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const itemsPerPage = 2;
+  const itemsPerPage = 10;
   const [editForm, setEditForm] = useState({
     peminjam: "",
     nomor_berkas: "",
