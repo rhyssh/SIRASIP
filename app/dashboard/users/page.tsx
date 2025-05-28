@@ -251,7 +251,7 @@ export default function UsersPage() {
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Batal
               </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveNew} disabled={!newForm.email || !newForm.name || !newForm.password || !newForm.role || !newForm.status || isLoading}>
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveNew} disabled={isLoading}>
                 {isLoading ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
