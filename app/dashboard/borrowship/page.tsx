@@ -131,6 +131,7 @@ export default function BorrowshipPage() {
         tanggal_peminjam: newForm.tanggal_peminjam,
         tanggal_kembali: newForm.tanggal_kembali || null,
         petugas: currentUser?.name || "", // <<== INI
+        status: newForm.status || "aktif",
       };
 
       const created = await createBorrowRecord(recordToInsert as Omit<BorrowRecord, "id" | "created_at" | "updated_at">);
