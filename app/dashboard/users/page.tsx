@@ -58,18 +58,23 @@ export default function UsersPage() {
 
   useEffect(() => {
     const currUser = async () => {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error("Error getting current user:", error);
+      }
     };
 
     currUser();
+
     const fetchUsers = async () => {
       try {
-        const { getUsers } = await import("@/lib/database"); // atau path relatif `../../../../lib/database` sesuai struktur
         const data = await getUsers();
         setUsers(data);
       } catch (error) {
         console.error("Gagal mengambil data users", error);
+        // Users tetap kosong jika error, tapi fallback dummy data akan ditampilkan
       }
     };
 
@@ -123,11 +128,9 @@ export default function UsersPage() {
   const handleSaveEdit = async () => {
     setIsLoading(true);
     try {
-      const { updateUser } = await import("@/lib/database");
       if (editingUser) {
         await updateUser(editingUser.id, editForm);
         // refetch users
-        const { getUsers } = await import("@/lib/database");
         const data = await getUsers();
         setUsers(data);
       }
@@ -136,12 +139,13 @@ export default function UsersPage() {
       setEditingUser(null);
     } catch (error) {
       console.error("Gagal update user", error);
+      setIsLoading(false);
+      alert("Gagal update user - Mungkin database tidak terhubung");
     }
   };
 
   const handleSaveNew = async () => {
     setIsLoading(true);
-    console.log(!newForm.role);
     if (!newForm.name || !newForm.email || !newForm.password || !newForm.role || !newForm.status) {
       alert("Mohon lengkapi semua data termasuk role dan status.");
       setIsLoading(false);
@@ -161,17 +165,19 @@ export default function UsersPage() {
       });
     } catch (error) {
       console.error("Gagal tambah data", error);
+      setIsLoading(false);
+      alert("Gagal tambah user - Mungkin database tidak terhubung");
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Yakin mau hapus user ini?")) return;
     try {
-      const { deleteUser } = await import("@/lib/database");
       await deleteUser(userId);
       setUsers((prev) => prev.filter((user) => user.id !== userId));
     } catch (error) {
       console.error("Gagal hapus data", error);
+      alert("Gagal hapus user - Mungkin database tidak terhubung");
     }
   };
 

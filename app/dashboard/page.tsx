@@ -75,20 +75,33 @@ export default function DashboardPage() {
       setUser(JSON.parse(userData));
     }
 
-    // Ambil data statistik dari Supabase
+    // Ambil data statistik dari Supabase/Dummy Data
     const fetchStats = async () => {
-      const dashboardStats = await getDashboardStats();
-      setStats(dashboardStats);
+      try {
+        const dashboardStats = await getDashboardStats();
+        setStats(dashboardStats);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+        // Stats tetap pakai initial value jika error
+      }
     };
-
-    fetchStats();
 
     const fetchMoreData = async () => {
-      const [activities, overdues] = await Promise.all([getRecentActivities(), getOverdueBorrows()]);
-      setRecentActivities(activities);
-      setOverdueDocs(overdues);
+      try {
+        const [activities, overdues] = await Promise.all([
+          getRecentActivities(),
+          getOverdueBorrows(),
+        ]);
+        setRecentActivities(activities);
+        setOverdueDocs(overdues);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+        // Data tetap kosong atau bisa pakai default jika error
+      }
     };
 
+    // Jalankan kedua fungsi
+    fetchStats();
     fetchMoreData();
   }, []);
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 
-import { signIn } from "@/lib/auth";
+import { signIn, dummyLogin } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,8 @@ export default function LoginPage() {
     setErrorMsg("");
 
     try {
-      await signIn(email, password);
+      // Mode Development: gunakan dummy login tanpa verifikasi database
+      await dummyLogin(email, password);
       router.push("/dashboard");
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -72,9 +74,14 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-slate-500">
-              {/* <p>Demo: gunakan email dengan "admin" untuk akses admin</p>
-              <p>Contoh: admin@jatengprov.go.id</p> */}
+            <div className="mt-6 text-center text-sm text-slate-600 bg-blue-50 p-3 rounded-lg">
+              <p className="font-semibold mb-2">🔓 Mode Dummy/Testing (Development)</p>
+              <p className="text-xs mb-1">
+                <strong>Admin:</strong> admin@jatengprov.go.id / admin123
+              </p>
+              <p className="text-xs">
+                Atau masukkan email apapun dengan password: <strong>dev</strong>
+              </p>
             </div>
           </CardContent>
         </Card>

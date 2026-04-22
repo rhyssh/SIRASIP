@@ -19,7 +19,7 @@ export default function DashboardLayout({
   useEffect(() => {
     const user = localStorage.getItem("user")
     if (!user) {
-      router.push("/login")
+      router.push("/dashboard")
     }
   }, [router])
 
